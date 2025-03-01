@@ -1,36 +1,31 @@
-import streamlit as st
 import pymongo
-import os
+import streamlit as st
 
-st.title("🔗 Simple MongoDB Connection Tool")
+st.title("🔗 MongoDB Connection Test")
 
-# MongoDB Connection (Replace with your URI)
-MONGO_URI = st.text_input("Enter MongoDB Connection String:", type="password")
-connect_button = st.button("Connect to MongoDB")
+# Retrieve MongoDB URI from Streamlit Secrets
+if "MONGO_URI" not in st.secrets:
+    st.error("❌ MongoDB URI is missing! Add it in Streamlit Secrets.")
+    st.stop()
 
-if connect_button and MONGO_URI:
-    try:
-        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        db = client["test_database"]  # Change database name if needed
-        collection = db["test_collection"]  # Change collection name if needed
+MONGO_URI = st.secrets["MONGO_URI"]
 
-        # Test Connection
-        client.admin.command('ping')
-        st.success("✅ MongoDB Connection Successful!")
+# Test MongoDB Connection
+try:
+    client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    db = client["Q_and_A"]  # Your database name
+    collection = db["content_data"]  # Collection name
+    client.admin.command('ping')  # Quick test to ensure connection
+    st.success("✅ MongoDB Connection Successful!")
 
-        # Insert Sample Data
-        if st.button("Insert Sample Data"):
-            sample_data = {"name": "Test Entry", "value": 42}
-            collection.insert_one(sample_data)
-            st.success("✅ Sample Data Inserted!")
+    # Fetch Last Entry
+    last_entry = collection.find_one({}, sort=[("content_id", pymongo.DESCENDING)])
+    if last_entry:
+        st.write("📌 **Last Entry in Database:**", last_entry)
+    else:
+        st.write("⚠️ No data found in the collection!")
 
-        # Fetch & Display Data
-        st.subheader("📂 Stored Data")
-        all_data = list(collection.find({}, {"_id": 0}))  # Hide `_id` for simplicity
-        if all_data:
-            st.write(all_data)
-        else:
-            st.write("⚠️ No data found in the database!")
-
-    except pymongo.errors.ServerSelectionTimeoutError:
-        st.error("❌ Failed to connect! Check MongoDB URI and Network Settings.")
+except pymongo.errors.ServerSelectionTimeoutError:
+    st.error("❌ Could not connect! Check MongoDB URI and Network Settings.")
+except pymongo.errors.InvalidURI:
+    st.error("❌ Invalid MongoDB URI! Check secrets formatting.")
