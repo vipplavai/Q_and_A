@@ -11,21 +11,12 @@ if st.button("Connect to MongoDB"):
 
         # Connect to MongoDB
         client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-        db = client["Q_and_A"]  # Database name
-        collection = db["content_data"]  # Collection name
-
-        # Test Connection
-        client.admin.command('ping')
+        client.admin.command('ping')  # Test MongoDB connection
         st.success("✅ Connected to MongoDB Successfully!")
 
-        # Display a sample document if available
-        sample_data = collection.find_one({}, {"_id": 0})  # Hide `_id` for readability
-        if sample_data:
-            st.write("📌 **Sample Document:**", sample_data)
-        else:
-            st.write("⚠️ No data found in the database!")
-
-    except pymongo.errors.ServerSelectionTimeoutError:
-        st.error("❌ Could not connect! Check MongoDB URI and Network Settings.")
-    except pymongo.errors.InvalidURI:
-        st.error("❌ Invalid MongoDB URI! Check your Streamlit Secrets.")
+    except pymongo.errors.ConnectionFailure:
+        st.error("❌ Connection Failed! Check MongoDB Network Settings.")
+    except pymongo.errors.ConfigurationError:
+        st.error("❌ Configuration Error! Check your MongoDB URI.")
+    except Exception as e:
+        st.error(f"❌ Unexpected Error: {e}")
