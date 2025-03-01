@@ -9,8 +9,8 @@ password = "pradsml@2025"  # Replace with actual password
 # Encode special characters in the password
 encoded_password = urllib.parse.quote_plus(password)
 
-# Modify Connection String (Disable TLS Verification)
-MONGO_URI = f"mongodb+srv://{username}:{encoded_password}@cluster0.fsbic.mongodb.net/?retryWrites=true&w=majority&tlsAllowInvalidCertificates=false"
+# Optimize MongoDB Connection (Enable Keep-Alive & Shorter Timeout)
+MONGO_URI = f"mongodb+srv://{username}:{encoded_password}@cluster0.fsbic.mongodb.net/?retryWrites=true&w=majority&tlsAllowInvalidCertificates=true&connectTimeoutMS=5000&socketTimeoutMS=5000"
 
 # Connect to MongoDB
 client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
