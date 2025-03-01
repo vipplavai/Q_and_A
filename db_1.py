@@ -1,12 +1,13 @@
 import pymongo
+import streamlit as st
 import os
 
 # Load MongoDB URI from Streamlit Secrets
-MONGO_URI = os.getenv("MONGOmongodb+srv://prashanth01071995:pradsml@2025@cluster0.fsbic.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0_URI")  # Get URI from Streamlit Secrets
+MONGO_URI = st.secrets["MONGO_URI"]  # ✅ Streamlit TOML Secrets
 
 # Connect to MongoDB
 client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-db = client["Q_and_A"]  # Use your actual database name
+db = client["Q_and_A"]  # Your database name
 collection = db["content_data"]  # Collection name
 
 # Function to generate next unique content ID
