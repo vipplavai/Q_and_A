@@ -1,31 +1,31 @@
-import pymongo
 import streamlit as st
+import pymongo
 
-st.title("🔗 MongoDB Connection Test")
+st.title("🔗 MongoDB Connection Tool")
 
-# Retrieve MongoDB URI from Streamlit Secrets
-if "MONGO_URI" not in st.secrets:
-    st.error("❌ MongoDB URI is missing! Add it in Streamlit Secrets.")
-    st.stop()
+# Button to Connect to MongoDB
+if st.button("Connect to MongoDB"):
+    try:
+        # Retrieve MongoDB URI from Streamlit Secrets
+        MONGO_URI = st.secrets["MONGO_URI"]
 
-MONGO_URI = st.secrets["MONGO_URI"]
+        # Connect to MongoDB
+        client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        db = client["Q_and_A"]  # Database name
+        collection = db["content_data"]  # Collection name
 
-# Test MongoDB Connection
-try:
-    client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-    db = client["Q_and_A"]  # Your database name
-    collection = db["content_data"]  # Collection name
-    client.admin.command('ping')  # Quick test to ensure connection
-    st.success("✅ MongoDB Connection Successful!")
+        # Test Connection
+        client.admin.command('ping')
+        st.success("✅ Connected to MongoDB Successfully!")
 
-    # Fetch Last Entry
-    last_entry = collection.find_one({}, sort=[("content_id", pymongo.DESCENDING)])
-    if last_entry:
-        st.write("📌 **Last Entry in Database:**", last_entry)
-    else:
-        st.write("⚠️ No data found in the collection!")
+        # Display a sample document if available
+        sample_data = collection.find_one({}, {"_id": 0})  # Hide `_id` for readability
+        if sample_data:
+            st.write("📌 **Sample Document:**", sample_data)
+        else:
+            st.write("⚠️ No data found in the database!")
 
-except pymongo.errors.ServerSelectionTimeoutError:
-    st.error("❌ Could not connect! Check MongoDB URI and Network Settings.")
-except pymongo.errors.InvalidURI:
-    st.error("❌ Invalid MongoDB URI! Check secrets formatting.")
+    except pymongo.errors.ServerSelectionTimeoutError:
+        st.error("❌ Could not connect! Check MongoDB URI and Network Settings.")
+    except pymongo.errors.InvalidURI:
+        st.error("❌ Invalid MongoDB URI! Check your Streamlit Secrets.")
