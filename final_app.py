@@ -3,12 +3,9 @@ import pymongo
 import os
 import urllib.parse
 
-import streamlit as st
-import pymongo
-import os
-
 # Load MongoDB URI from Environment Variables
-MONGO_URI = os.getenv("MONGO_URI")
+MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://prashanth01071995:pradsml%402025@cluster0.fsbic.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+
 
 # Debug: Show if MONGO_URI is loaded
 if not MONGO_URI:
