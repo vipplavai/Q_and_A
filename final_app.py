@@ -3,22 +3,28 @@ import pymongo
 import os
 import urllib.parse
 
-st.title("📝 Direct Question Entry Tool")
+import streamlit as st
+import pymongo
+import os
 
-# Load MongoDB URI from Environment Variables (Set in Render)
+# Load MongoDB URI from Environment Variables
 MONGO_URI = os.getenv("MONGO_URI")
+
+# Debug: Show if MONGO_URI is loaded
+if not MONGO_URI:
+    st.error("❌ MONGO_URI is missing in Render Environment Variables!")
+    st.stop()
 
 # Connect to MongoDB
 try:
     client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-    db = client["Q_and_A"]  # Database Name
-    collection = db["content_data"]  # Collection Name
+    db = client["Q_and_A"]
+    collection = db["content_data"]
     client.admin.command('ping')  # Test Connection
     st.success("✅ Connected to MongoDB Successfully!")
-except pymongo.errors.ConnectionFailure:
-    st.error("❌ Connection Failed! Check MongoDB Network Settings.")
-except pymongo.errors.ConfigurationError:
-    st.error("❌ Configuration Error! Check your MongoDB URI.")
+except Exception as e:
+    st.error(f"❌ MongoDB Connection Failed! Error: {e}")
+
 
 # Input for Content ID
 content_id_input = st.text_input("Enter Content ID to Fetch Content (e.g., 000001):")
