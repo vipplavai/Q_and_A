@@ -1,26 +1,18 @@
 import pymongo
-import streamlit as st
+import urllib.parse
 import os
 
-# Load MongoDB URI from Streamlit Secrets
-MONGO_URI = st.secrets["MONGO_URI"]  # ✅ Streamlit TOML Secrets
+# Load MongoDB URI from Environment Variables (Render uses ENV variables)
+MONGO_URI = os.getenv("MONGO_URI")
 
 # Connect to MongoDB
-client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
-db = client["Q_and_A"]  # Your database name
-collection = db["content_data"]  # Collection name
-
-# Function to generate next unique content ID
-def get_next_content_id():
-    last_entry = collection.find_one({}, sort=[("content_id", pymongo.DESCENDING)])
-
-    if last_entry and "content_id" in last_entry:
-        try:
-            last_id = int(last_entry["content_id"])  # Convert to int only if it's numeric
-            new_id = f"{last_id + 1:06d}"  # Increment and format as 6-digit number
-        except ValueError:
-            new_id = "000001"  # Reset to 000001 if non-numeric content_id exists
-    else:
-        new_id = "000001"  # Start from 000001 if no entries exist
-    
-    return new_id
+try:
+    client = pymongo.MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+    db = client["Q_and_A"]  # Database Name
+    collection = db["content_data"]  # Collection Name
+    client.admin.command('ping')  # Test Connection
+    print("✅ Connected to MongoDB Successfully!")
+except pymongo.errors.ConnectionFailure:
+    print("❌ Connection Failed! Check MongoDB Network Settings.")
+except pymongo.errors.ConfigurationError:
+    print("❌ Configuration Error! Check your MongoDB URI.")
